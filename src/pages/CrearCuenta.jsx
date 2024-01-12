@@ -1,11 +1,13 @@
 import { useState, useContext } from "react";
 import { Context } from "../store/AppContext.jsx";
 import IniciarSesion from "./IniciarSesion.jsx";
+import { useNavigate } from "react-router-dom";
 
 const CrearCuenta = () => {
   const { store, actions } = useContext(Context);
   const [email, setEmail] = useState("");
   const [contraseña, setContraseña] = useState("");
+  const navigate = useNavigate();
 
   console.log("API URL:", store.apiURL);
 
@@ -30,6 +32,7 @@ const CrearCuenta = () => {
       .then((data) => {
         // Manejar la respuesta del servidor según tus necesidades
         console.log("Cuenta creada exitosamente", data);
+        navigate("/iniciar-sesion");
       })
       .catch((error) => {
         // Manejar errores de la solicitud
