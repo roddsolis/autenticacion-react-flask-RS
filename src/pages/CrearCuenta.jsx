@@ -5,22 +5,21 @@ import { useNavigate } from "react-router-dom";
 
 const CrearCuenta = () => {
   const { store, actions } = useContext(Context);
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
-  const [contraseña, setContraseña] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
-
-  console.log("API URL:", store.apiURL);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Enviar datos al servidor
     fetch(`${store.apiURL}/crear-cuenta`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        username: username,
         email: email,
-        password: contraseña,
+        password: password,
       }),
     })
       .then((response) => {
@@ -30,12 +29,10 @@ const CrearCuenta = () => {
         return response.json();
       })
       .then((data) => {
-        // Manejar la respuesta del servidor según tus necesidades
         console.log("Cuenta creada exitosamente", data);
         navigate("/iniciar-sesion");
       })
       .catch((error) => {
-        // Manejar errores de la solicitud
         console.error("Error al crear la cuenta:", error.message);
       });
   };
@@ -47,6 +44,12 @@ const CrearCuenta = () => {
           <h2>Crea una cuenta</h2>
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
+              <label htmlFor="exampleInputUsername1" className="form-label">
+                Nombre de usuario
+              </label>
+              <input type="text" className="form-control" id="exampleInputUsername1" onChange={(e) => setUsername(e.target.value)} value={username} />
+            </div>
+            <div className="mb-3">
               <label htmlFor="exampleInputEmail1" className="form-label">
                 Correo electrónico
               </label>
@@ -56,7 +59,7 @@ const CrearCuenta = () => {
               <label htmlFor="exampleInputPassword1" className="form-label">
                 Contraseña
               </label>
-              <input type="password" className="form-control" id="exampleInputPassword1" onChange={(e) => setContraseña(e.target.value)} value={contraseña} />
+              <input type="password" className="form-control" id="exampleInputPassword1" onChange={(e) => setPassword(e.target.value)} value={password} />
             </div>
             <button type="submit" className="btn btn-primary">
               Crear cuenta

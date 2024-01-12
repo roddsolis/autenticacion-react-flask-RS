@@ -7,11 +7,10 @@ const getState = ({ getStore, getActions, setStore }) => {
     store: {
       apiURL: "http://127.0.0.1:5000",
       currentUser: null,
-      token: null, // Agregamos el campo token al store
+      token: null,
     },
     actions: {
       setToken: (token) => {
-        // Actualizamos el estado con el nuevo token
         setStore({ token: token });
       },
     },

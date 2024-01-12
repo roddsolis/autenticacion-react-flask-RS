@@ -3,7 +3,6 @@ import datetime
 from flask import Flask, jsonify, request
 from flask_migrate import Migrate
 from flask_cors import CORS
-from flask_cors import cross_origin
 from dotenv import load_dotenv
 from models import db, User
 from flask_jwt_extended import JWTManager
@@ -34,64 +33,54 @@ def main():
 
 @app.route('/iniciar-sesion', methods=['POST'])
 def login():
-
-    username = request.json.get("username")
+    email = request.json.get("email")  # Cambié 'username' a 'email'
     password = request.json.get("password")
 
-    if not username:
-        return jsonify({ "msg": "username es obligatorio!"}), 400
+    if not email or not password:
+        return jsonify({ "msg": "Email y contraseña son obligatorios!"}), 400
 
-    if not password:
-        return jsonify({ "msg": "password es obligatorio!"}), 400
+    user_found = User.query.filter_by(email=email).first()
 
-    userFound = User.query.filter_by(username=username).first() # [<User 1>] => <User 1>
+    if not user_found:
+        return jsonify({ "msg": "Email/password son incorrectos!"}), 401
 
-    if not userFound:
-        return jsonify({ "msg": "username/password son incorrectos!"}), 401
+    if not check_password_hash(user_found.password, password):
+        return jsonify({ "msg": "Email/password son incorrectos!"}), 401
 
-    if not check_password_hash(userFound.password, password):
-        return jsonify({ "msg": "username/password son incorrectos!"}), 401
-
-    # crear fecha de vencimiento del token
     expires = datetime.timedelta(days=3)
-    # crear el token (jwt)
-    access_token =  create_access_token(identity=userFound.id, expires_delta=expires)
+    access_token = create_access_token(identity=user_found.id, expires_delta=expires)
 
-    # creamos un diccionario para devolver el token y la informacion del usuario
     data = {
         "access_token": access_token,
-        "user": userFound.serialize()
+        "user": user_found.serialize()
     }
 
     return jsonify(data), 200
 
 
 @app.route('/crear-cuenta', methods=['POST'])
-@cross_origin()
 def register():
-
-    username = request.json.get("email")
+    username = request.json.get("username")
+    email = request.json.get("email")
     password = request.json.get("password")
 
-    if not username:
-        return jsonify({ "msg": "username es obligatorio!"}), 400
+    if not username or not email or not password:
+        return jsonify({ "msg": "Todos los campos son obligatorios!"}), 400
 
-    if not password:
-        return jsonify({ "msg": "password es obligatorio!"}), 400
-
-    userFound = User.query.filter_by(username=username).first()
+    userFound = User.query.filter_by(username=username).first() or User.query.filter_by(email=email).first()
 
     if userFound:
-        return jsonify({ "msg": "el username ya esta siendo usado!"}), 400
+        return jsonify({ "msg": "El nombre de usuario o correo electrónico ya está siendo usado!"}), 400
 
     user = User()
     user.username = username
-    user.password = generate_password_hash(password) # se encripta el password
+    user.email = email
+    user.password = generate_password_hash(password)
 
     db.session.add(user)
     db.session.commit()
 
-    return jsonify({ "success": "Registro con exito, por favor iniciar sesion!"}), 200
+    return jsonify({ "success": "Registro con éxito, por favor iniciar sesión!"}), 200
 
 @app.route('/private', methods=['GET'])
 @jwt_required() # convierte el endpoint en una ruta privada
